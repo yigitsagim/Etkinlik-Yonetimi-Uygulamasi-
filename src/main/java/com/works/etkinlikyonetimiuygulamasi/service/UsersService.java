@@ -23,15 +23,15 @@ public class UsersService {
     final ModelMapper modelMapper;
     final HttpServletRequest request;
 
-  //register
-    public ResponseEntity register(UsersRegisterDto usersRegisterDto){
+    //register
+    public ResponseEntity register(UsersRegisterDto usersRegisterDto) {
         Optional<Users> usersOptional = usersRepository.findByEmailEqualsIgnoreCase(usersRegisterDto.getEmail());
-        if (usersOptional.isEmpty()){
-            Users users = modelMapper.map(usersRegisterDto , Users.class);
+        if (usersOptional.isEmpty()) {
+            Users users = modelMapper.map(usersRegisterDto, Users.class);
             usersRepository.save(users);
-            return  ResponseEntity.ok().body(users);
+            return ResponseEntity.ok().body(users);
         }
-        Map<String,Object> hm = Map.of("success",false,"message","This email is already in use");
+        Map<String, Object> hm = Map.of("success", false, "message", "This email is already in use");
         return ResponseEntity.badRequest().body(hm);
     }
 

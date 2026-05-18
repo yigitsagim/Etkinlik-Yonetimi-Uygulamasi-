@@ -7,12 +7,13 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-@Configuration
+@Component
 public class SessionFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionFilter.class);
