@@ -82,4 +82,8 @@ public class EventRestController {
     public ResponseEntity getEventParticipants(@PathVariable Long id) {
         return eventService.getEventParticipants(id);
     }
+    @GetMapping("/my")
+    public ResponseEntity getMyEvents() {
+        return eventService.getMyEvents();
+    }
 }

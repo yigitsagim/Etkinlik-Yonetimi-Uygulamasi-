@@ -1,5 +1,6 @@
 package com.works.etkinlikyonetimiuygulamasi.service;
 
+import com.works.etkinlikyonetimiuygulamasi.dto.UserResponseDto;
 import com.works.etkinlikyonetimiuygulamasi.dto.UsersLoginDto;
 import com.works.etkinlikyonetimiuygulamasi.dto.UsersRegisterDto;
 import com.works.etkinlikyonetimiuygulamasi.entity.Users;
@@ -8,10 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,21 +22,18 @@ public class UsersService {
     final ModelMapper modelMapper;
     final HttpServletRequest request;
 
-    //register
     public ResponseEntity register(UsersRegisterDto usersRegisterDto) {
         Optional<Users> usersOptional = usersRepository.findByEmailEqualsIgnoreCase(usersRegisterDto.getEmail());
         if (usersOptional.isEmpty()) {
             Users users = modelMapper.map(usersRegisterDto, Users.class);
             usersRepository.save(users);
-            return ResponseEntity.ok().body(users);
+            UserResponseDto dto = modelMapper.map(users, UserResponseDto.class);
+            return ResponseEntity.ok().body(dto);
         }
-        Map<String, Object> hm = Map.of("success", false, "message", "This email is already in use");
-        return ResponseEntity.badRequest().body(hm);
+        return ResponseEntity.badRequest().body(Map.of("success", false, "message", "This email is already in use"));
     }
 
-    //login
     public ResponseEntity login(UsersLoginDto usersLoginDto) {
-
         Optional<Users> usersOptional = usersRepository.findByEmailEqualsIgnoreCase(usersLoginDto.getEmail());
 
         if (usersOptional.isEmpty()) {
@@ -52,10 +48,10 @@ public class UsersService {
 
         request.getSession().setAttribute("user", users);
 
-        return ResponseEntity.ok().body(users);
+        UserResponseDto dto = modelMapper.map(users, UserResponseDto.class);
+        return ResponseEntity.ok().body(dto);
     }
 
-    // logout
     public ResponseEntity logOut() {
         request.getSession().invalidate();
         return ResponseEntity.ok().body("Logout successfully.");

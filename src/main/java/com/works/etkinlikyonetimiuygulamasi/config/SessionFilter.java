@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -25,12 +24,24 @@ public class SessionFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
+        // CORS headers ekle
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+
+        // OPTIONS preflight isteğini geç
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            return;
+        }
+
         String urlPath = request.getRequestURI();
 
-        // ✅ Auth gerektirmeyen URL'ler
         String[] freeUrls = {
                 "/users/register",
                 "/users/login",
+                "/users/logout",
                 "/swagger-ui",
                 "/v3/api-docs",
                 "/actuator"
@@ -44,7 +55,6 @@ public class SessionFilter implements Filter {
             }
         }
 
-        // 🔹 LOG BİLGİLERİ
         String ipAddress = getClientIp(request);
         String userAgent = request.getHeader("User-Agent");
         String method = request.getMethod();
@@ -72,7 +82,6 @@ public class SessionFilter implements Filter {
                 (user != null ? user : "Anonymous")
         );
 
-        // 🔐 AUTH KONTROL
         if (isAuth && user == null) {
             logger.warn("Unauthorized access -> IP: {}, URL: {}", ipAddress, urlPath);
 

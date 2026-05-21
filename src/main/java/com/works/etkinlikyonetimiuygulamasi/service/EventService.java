@@ -29,11 +29,10 @@ public class EventService {
     private final ModelMapper modelMapper;
     private final HttpServletRequest request;
 
-    // Etkinlik Oluşturma
     public ResponseEntity createEvent(EventCreateDto eventCreateDto) {
         Users currentUser = (Users) request.getSession().getAttribute("user");
         if (currentUser == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Oturum bulunamadı."));
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Oturum bulunamadi."));
         }
 
         Event event = modelMapper.map(eventCreateDto, Event.class);
@@ -44,27 +43,26 @@ public class EventService {
 
         return ResponseEntity.ok().body(Map.of(
                 "success", true,
-                "message", "Etkinlik başarıyla oluşturuldu",
+                "message", "Etkinlik basariyla olusturuldu",
                 "event_id", event.getId()
         ));
     }
 
-    // Etkinlik Düzenleme (Güncelleme)
     public ResponseEntity updateEvent(Long eventId, EventUpdateDto eventUpdateDto) {
         Users currentUser = (Users) request.getSession().getAttribute("user");
         if (currentUser == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lütfen önce giriş yapın."));
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lutfen once giris yapin."));
         }
 
         Optional<Event> optionalEvent = eventRepository.findById(eventId);
         if (optionalEvent.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Güncellenecek etkinlik bulunamadı."));
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Guncellenecek etkinlik bulunamadi."));
         }
 
         Event event = optionalEvent.get();
 
         if (!event.getOwner().getId().equals(currentUser.getId())) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Bu etkinliği düzenleme yetkiniz yok!"));
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Bu etkinligi duzenleme yetkiniz yok!"));
         }
 
         event.setTitle(eventUpdateDto.getTitle());
@@ -78,27 +76,26 @@ public class EventService {
 
         return ResponseEntity.ok().body(Map.of(
                 "success", true,
-                "message", "Etkinlik başarıyla güncellendi.",
+                "message", "Etkinlik basariyla guncellendi.",
                 "event_id", event.getId()
         ));
     }
 
-    // Etkinlik Durumu (Status) Değiştirme
     public ResponseEntity changeEventStatus(Long eventId, EventStatus newStatus) {
         Users currentUser = (Users) request.getSession().getAttribute("user");
         if (currentUser == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lütfen önce giriş yapın."));
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lutfen once giris yapin."));
         }
 
         Optional<Event> optionalEvent = eventRepository.findById(eventId);
         if (optionalEvent.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Etkinlik bulunamadı."));
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Etkinlik bulunamadi."));
         }
 
         Event event = optionalEvent.get();
 
         if (!event.getOwner().getId().equals(currentUser.getId())) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Bu etkinliğin durumunu değiştirme yetkiniz yok!"));
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Bu etkinligin durumunu degistirme yetkiniz yok!"));
         }
 
         event.setStatus(newStatus);
@@ -106,43 +103,40 @@ public class EventService {
 
         return ResponseEntity.ok().body(Map.of(
                 "success", true,
-                "message", "Etkinlik durumu başarıyla '" + newStatus.name() + "' olarak güncellendi.",
+                "message", "Etkinlik durumu basariyla guncellendi.",
                 "event_id", event.getId()
         ));
     }
 
-    // Etkinlik Silme
     public ResponseEntity deleteEvent(Long eventId) {
         Users currentUser = (Users) request.getSession().getAttribute("user");
         if (currentUser == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lütfen önce giriş yapın."));
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lutfen once giris yapin."));
         }
 
         Optional<Event> optionalEvent = eventRepository.findById(eventId);
         if (optionalEvent.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Silinecek etkinlik bulunamadı."));
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Silinecek etkinlik bulunamadi."));
         }
 
         Event event = optionalEvent.get();
 
         if (!event.getOwner().getId().equals(currentUser.getId())) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Bu etkinliği silme yetkiniz yok!"));
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Bu etkinligi silme yetkiniz yok!"));
         }
 
         eventRepository.delete(event);
 
         return ResponseEntity.ok().body(Map.of(
                 "success", true,
-                "message", "Etkinlik başarıyla silindi."
+                "message", "Etkinlik basariyla silindi."
         ));
     }
 
-    // 1. Yayındaki Etkinlikleri Listele (Pagination)
     public ResponseEntity getAllPublishedEvents(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Event> events = eventRepository.findByStatus(EventStatus.PUBLISHED, pageable);
 
-        // Entity listesini DTO listesine çevir
         Page<EventResponseDto> dtoPage = events.map(event -> {
             EventResponseDto dto = modelMapper.map(event, EventResponseDto.class);
             dto.setOwnerName(event.getOwner().getUsername());
@@ -152,7 +146,6 @@ public class EventService {
         return ResponseEntity.ok(dtoPage);
     }
 
-    // 2. Etkinlik Ara
     public ResponseEntity searchEvents(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Event> events = eventRepository.searchEvents(keyword, EventStatus.PUBLISHED, pageable);
@@ -166,11 +159,10 @@ public class EventService {
         return ResponseEntity.ok(dtoPage);
     }
 
-    // 3. Tekil Etkinlik Detayı
     public ResponseEntity getEventDetail(Long eventId) {
         Optional<Event> optionalEvent = eventRepository.findById(eventId);
         if (optionalEvent.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Etkinlik bulunamadı."));
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Etkinlik bulunamadi."));
         }
 
         Event event = optionalEvent.get();
@@ -180,63 +172,56 @@ public class EventService {
         return ResponseEntity.ok(dto);
     }
 
-    // 1. Etkinliğe Katılma
     public ResponseEntity joinEvent(Long eventId) {
         Users currentUser = (Users) request.getSession().getAttribute("user");
         if (currentUser == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lütfen önce giriş yapın."));
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lutfen once giris yapin."));
         }
 
         Optional<Event> optionalEvent = eventRepository.findById(eventId);
         if (optionalEvent.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Etkinlik bulunamadı."));
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Etkinlik bulunamadi."));
         }
 
         Event event = optionalEvent.get();
 
-        // Kendi oluşturduğu etkinliğe katılmasını engellemek istersen:
         if (event.getOwner().getId().equals(currentUser.getId())) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Kendi oluşturduğunuz etkinliğe katılamazsınız."));
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Kendi olusturdugunuz etkinlige katilmazsiniz."));
         }
 
-        // Daha önce katılmış mı kontrolü
         boolean isAlreadyJoined = event.getParticipants().stream()
                 .anyMatch(user -> user.getId().equals(currentUser.getId()));
 
         if (isAlreadyJoined) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Bu etkinliğe zaten katıldınız."));
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Bu etkinlige zaten katildiniz."));
         }
 
-        // Katılımcı listesine ekle ve kaydet
         event.getParticipants().add(currentUser);
         eventRepository.save(event);
 
         return ResponseEntity.ok().body(Map.of(
                 "success", true,
-                "message", "Etkinliğe başarıyla katıldınız!"
+                "message", "Etkinlige basariyla katildiniz!"
         ));
     }
 
-    // 2. Katılımcıları Listeleme (Sadece Etkinlik Sahibi Görebilir)
     public ResponseEntity getEventParticipants(Long eventId) {
         Users currentUser = (Users) request.getSession().getAttribute("user");
         if (currentUser == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lütfen önce giriş yapın."));
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lutfen once giris yapin."));
         }
 
         Optional<Event> optionalEvent = eventRepository.findById(eventId);
         if (optionalEvent.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Etkinlik bulunamadı."));
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Etkinlik bulunamadi."));
         }
 
         Event event = optionalEvent.get();
 
-        // GÜVENLİK: Katılımcıları sadece etkinliği oluşturan kişi görebilir
         if (!event.getOwner().getId().equals(currentUser.getId())) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Sadece etkinlik sahibi katılımcıları görebilir."));
+            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Sadece etkinlik sahibi katilimcilari gorebilir."));
         }
 
-        // Katılımcıları (Şifresiz olarak) DTO listesine çevir
         List<UserResponseDto> participantsList = event.getParticipants().stream().map(user -> {
             UserResponseDto dto = new UserResponseDto();
             dto.setId(user.getId());
@@ -246,5 +231,23 @@ public class EventService {
         }).collect(Collectors.toList());
 
         return ResponseEntity.ok(participantsList);
+    }
+
+    public ResponseEntity getMyEvents() {
+        Users currentUser = (Users) request.getSession().getAttribute("user");
+        if (currentUser == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Lutfen once giris yapin."));
+        }
+
+        List<Event> events = eventRepository.findByOwner(currentUser);
+        List<EventResponseDto> dtos = events.stream()
+                .map(e -> {
+                    EventResponseDto dto = modelMapper.map(e, EventResponseDto.class);
+                    dto.setOwnerName(e.getOwner().getUsername());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok().body(dtos);
     }
 }
